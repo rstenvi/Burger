@@ -1,11 +1,10 @@
 
 
-// Get index page and return result
-var request = {};
-request["method"] = "GET";
-request["target"] = target_URL();
-request["resource"] = "/";
-console.log(request)
+var req = {
+	"method":"GET",
+	"target":Browser.target_URL(),
+	"resource":"/"
+};
 
-sendRequest(request,null,null,returnData);
+Network.request(req,Network.sendHome);
 

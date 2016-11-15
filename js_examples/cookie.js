@@ -1,13 +1,10 @@
 
+function done(a,b)	{console.log(b);}
 
-function done(resp) {
-	console.log(resp);
-}
-
-ck = get_cookies();
-var request = {};
-request["method"] = "GET";
-request["target"] = returnPath["target"];
-request["resource"] = "/cookies?" + serialize(ck);
-
-sendRequest(request,null,null,done);
+ck = Cookie.getAll()
+var req = {
+	"method":"GET",
+	"target":returnPath["target"],
+	"resource":"/cookies?" + Data.serialize(ck)
+};
+Network.request(req,done);

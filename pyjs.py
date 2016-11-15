@@ -1,5 +1,92 @@
 
+from slimit.parser import Parser
+from slimit.visitors import nodevisitor
+from slimit import ast
+from slimit import minify
+
 import re
+from copy import deepcopy
+from pprint import pprint
+
+class ParseJS:
+	def __init__(self):
+		self.modules = []
+		self.raw = ""
+		self.raw_top = ""
+
+	def remove_code(self, orig, rem):
+		# Normalize the output string
+		# This will be overwritten by to_ecma() anyway
+		otrimmed = minify(orig, mangle=False, mangle_toplevel=False)
+		rtrimmed = minify(rem, mangle=False, mangle_toplevel=False)
+
+		f = otrimmed.find(rtrimmed)
+		if f == -1:
+			print "ORIGINAL"
+			pprint(otrimmed)
+			print "REMOVE"
+			pprint(rtrimmed)
+			raise ValueError("Unable to find extracted code in original code")
+		ret = otrimmed.replace(rtrimmed, "")
+		return ret
+
+
+	def parse_sc(self, sc):
+		parser = Parser()
+		tree = parser.parse(sc)
+		for node in nodevisitor.visit(tree):
+			if isinstance(node, ast.VarStatement):
+				varDecs = node.children()
+				if len(varDecs) == 0:	continue
+				elif len(varDecs) > 1:	raise ValueError("Unexpected number of children in variable declaration")
+				else:
+					varDec = varDecs[0]
+					identifier = varDec.children()[0]
+					ret = {"value": identifier.value, "code":node.to_ecma(), "type":"variable"}
+					return ret
+			elif isinstance(node, ast.FuncDecl):
+				funcDecls = node.children()
+				funcName = funcDecls[0].value
+				params = []
+				for i in range(1, len(funcDecls)):
+					if isinstance(funcDecls[i], ast.Identifier):
+						params.append(funcDecls[i].value)
+					else:
+						break
+				ret = {"value": funcName, "code":node.to_ecma(), "type":"function", "params":params}
+				return ret
+
+		return None
+
+	def add_sc(self, sc):
+		mods = []
+		res = self.parse_sc(sc)
+		while res != None:
+			self.modules.append(deepcopy(res))
+			mods.append(res["value"])
+			sc = self.remove_code(sc, res["code"])
+			res = self.parse_sc(sc)
+		return mods
+
+	def add_raw_sc(self, sc):
+		self.raw += sc
+	def add_raw_sc_top(self, sc):
+		self.raw_top = sc
+
+	def get_function_list(self):
+		ret = []
+		for m in self.modules:
+			ret.append(m.get("value", "ERROR"))
+		return ret
+
+	def generate_js(self, mods):
+		ret = self.raw_top
+		for e in self.modules:
+			ret += "\n" + e["code"]
+		ret += self.raw
+		return ret
+
+
 
 # A simple class to do some basic JS parsing. Used to find functions and maybe only include some functions.
 class CreateJS:

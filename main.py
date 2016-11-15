@@ -78,14 +78,16 @@ if __name__ == '__main__':
 	plugload = []
 	js_helpers = ["helpers/functions.js"]
 
+	JS = pyjs.ParseJS()
+
 	# Add all the helper JS code
-	JS = pyjs.CreateJS()
+	JS = pyjs.ParseJS()
 	for jsh in js_helpers:
 		jscode = misc.file2string(jsh)
-		JS.add_functions(jscode)
+		JS.add_sc(jscode)
 
 	if "js" in args and args["js"] != None:
-		JS.add_source_code(misc.file2string(args["js"]))
+		JS.add_raw_sc(misc.file2string(args["js"]))
 
 	if "list" in args:
 		if args["list"] == "modules":
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 	fspath = os.path.join(mybase, fdir)
 	misc.create_dir(fspath)
 
-	JS.add_global_sc(jsvar)
+	JS.add_raw_sc_top(jsvar)
 	
 
 	funcs = JS.get_function_list()

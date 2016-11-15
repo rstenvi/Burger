@@ -34,6 +34,7 @@ class CookieCatcher(Controller):
 		self.server.send_response(200)
 		self.server.send_header('Access-Control-Allow-Origin', '*')
 		self.server.send_header('Content-type', 'application/json')
+		self.server.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
 		self.server.end_headers()
 		self.server.wfile.write("{status:'OK'}\n")
 		cookies = self.server.path[len(self.base)+1:]
