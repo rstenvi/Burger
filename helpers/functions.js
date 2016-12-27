@@ -47,8 +47,8 @@ var Network = function()	{
 			// If not present, there are no headers
 			h = {}
 			if("headers" in req)	h = req["headers"];
-			for (var key in req["headers"])	{
-				xhr.setRequestHeader(key, headers[key]);
+			for (var key in h)	{
+				xhr.setRequestHeader(key, h[key]);
 			}
 
 			xhr.onreadystatechange = function() {
@@ -92,4 +92,31 @@ var Data = function()	{
 }();
 
 
+
+var Scanner = function()	{
+	return	{
+		findServer: function(ip, port, url, to, cb_loaded)	{
+			var img = new Image();
+			img.onerror = function () {
+				if (!img) return;
+				img = undefined;
+				console.log('error');
+			};
+			img.onload = function () {
+				if (!img) return;
+				console.log(img);
+				img = undefined;
+				console.log('loaded');
+				cb_loaded(ip, port);
+			};
+	
+			img.src = 'http://' + ip + ':' + port + url;
+			setTimeout(function () {
+				if (!img) return;
+				img = undefined;
+				console.log('closed');
+			}, to);
+		}
+	  };
+}();
 

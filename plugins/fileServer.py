@@ -40,6 +40,7 @@ class FileServer(Controller):
 		# TODO: Add some more extensions
 		a = ftype.lower()
 		if a == "js":	return "application/javascript"
+		elif a == "html":	return "text/html"
 		else:			return "application/octet-stream"
 
 	def action(self):
