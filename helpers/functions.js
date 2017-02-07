@@ -91,7 +91,80 @@ var Data = function()	{
 	};
 }();
 
+var Html = function()	{
+	return	{
+		extractId: function(html, fid)	{
+			var el = document.createElement('html');
+			return el.getElementById(fid);
+		},
 
+		// Extract the N'th instance of an element
+		extractTagN: function(html, tag, N)	{
+			var el = document.createElement('html');
+			el.innerHTML = html;
+			return el.getElementsByTagName(tag)[N];
+
+		},
+		extractAttribute: function(el, attr)	{
+			if(el.hasAttribute(attr))	{
+				return el.getAttribute(attr);
+			}
+			else	{
+				return null;
+			}
+		},
+		extractAttributeChilds: function(par, attr, tag)	{
+			var els = par.getElementsByTagName(tag);
+			var ret = []
+			for(var i = 0; i < els.length; i++)	{
+				var val = this.extractAttribute(els[i], attr);
+				if(val != null)	{
+					ret.push({"tag": tag, attr:val});
+				}
+			}
+			return ret;
+		},
+		form2http: function(form)	{
+			req = {
+				"method":"POST",
+				"resource":"/",
+				"target":Browser.target_URL(),
+				"enctype":"application/x-www-form-urlencoded"
+			};
+			if(form.hasAttribute("method"))	{
+				req["method"] = form.getAttribute("method");
+			}
+			if(form.hasAttribute("action"))	{
+				fa = form.getAttribute("action");
+				if(fa.indexOf("http") == 0)	{
+					ll = fa.indexOf("://")
+					if(ll == -1)	{
+						console.log("Error")
+					}
+					ll = fa.indexOf("/", ll+3);
+					req["target"] = fa.substring(0, ll);
+					req["resource"] = fa.substring(ll);
+				}
+				else	{
+					req["resource"] = fa
+				}
+			}
+			var inputs=[];
+			var params = {}
+			var elems=["select","input"];
+			for(var i = 0; i < elems.length; i++)	{
+				var l = this.extractAttributeChilds(form, "name", elems[i]);
+				for(var j = 0; j < l.length; j++)	{
+					inputs.push(l[j]);
+					params[l[j]["attr"]] = "";
+				}
+			}
+			req["inputs"] = inputs;
+			req["params"] = params;
+			return req;
+		}
+	};
+}();
 
 var Scanner = function()	{
 	return	{
@@ -119,4 +192,7 @@ var Scanner = function()	{
 		}
 	  };
 }();
+
+
+
 
