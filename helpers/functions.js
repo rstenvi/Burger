@@ -29,7 +29,11 @@ var Browser = function()	{
 		target_URL: function()	{
 			var l = window.location.toString();
 			var p = window.location.pathname.toString();
-			var s = l.search(p);
+
+			// Handle case where "/" is the path
+			if(p != "/")	{var s = l.search(p);}
+			else	{s = l.length-1;}
+
 			return l.substring(0,s);
 		}
 	};
@@ -53,7 +57,7 @@ var Network = function()	{
 
 			xhr.onreadystatechange = function() {
 			    if(xhr.readyState == 4 && xhr.status == 200) {
-			        if(cb)	cb(req, xhr.responseText);
+			        if(cb)	cb(req, xhr);
 			    }
 			}
 
@@ -72,7 +76,7 @@ var Network = function()	{
 			    }
 			}
 			// Send as URL-encoded
-			xhr.send("data=" + encodeURIComponent(result));
+			xhr.send("data=" + encodeURIComponent(result.responseText));
 		}
 	};
 }();
@@ -113,14 +117,19 @@ var Html = function()	{
 				return null;
 			}
 		},
-		extractAttributeChilds: function(par, attr, tag)	{
+		extractAttributesChilds: function(par, attrs, tag)	{
 			var els = par.getElementsByTagName(tag);
 			var ret = []
 			for(var i = 0; i < els.length; i++)	{
-				var val = this.extractAttribute(els[i], attr);
-				if(val != null)	{
-					ret.push({"tag": tag, attr:val});
+				ins = {"tag": tag}
+				for(var j = 0; j < attrs.length; j++)	{
+					var val = this.extractAttribute(els[i], attrs[j]);
+					if(val != null)	{
+						ins[attrs[j]] = val;
+//						ret.push({"tag": tag, attr:val});
+					}
 				}
+				ret.push(ins)
 			}
 			return ret;
 		},
@@ -153,7 +162,7 @@ var Html = function()	{
 			var params = {}
 			var elems=["select","input"];
 			for(var i = 0; i < elems.length; i++)	{
-				var l = this.extractAttributeChilds(form, "name", elems[i]);
+				var l = this.extractAttributesChilds(form, ["name","value"], elems[i]);
 				for(var j = 0; j < l.length; j++)	{
 					inputs.push(l[j]);
 					params[l[j]["attr"]] = "";

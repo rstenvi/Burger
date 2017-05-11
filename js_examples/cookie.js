@@ -1,5 +1,5 @@
 
-function done(a,b)	{console.log(b);}
+function done(a,b)	{console.log(b.responseText);}
 
 ck = Cookie.getAll()
 var req = {
